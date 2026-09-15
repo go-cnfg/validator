@@ -1,0 +1,120 @@
+name: Go
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+env:
+  GOPRIVATE: github.com/go-cnfg/*
+
+jobs:
+  changed:
+    runs-on: ubuntu-latest
+    outputs:
+      has_changes: ${{ steps.check.outputs.has_changes }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - id: check
+        run: |
+          last=$(git tag --list 'v*' | grep -E '^v[0-9]' | sort -V | tail -1)
+          if [ -z "$last" ] || ! git diff --quiet "$last"..HEAD; then
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: ./internal/tools/go.mod
+          cache-dependency-path: "**/go.sum"
+
+      - name: Tidy check
+        run: make tidy-check
+
+      - name: Lint
+        run: make lint
+
+      - name: API check
+        run: make api-check
+
+      - name: Test
+        run: make test
+
+      - name: Upload results to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.txt
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./junit.xml
+
+  tag:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changed.outputs.has_changes == 'true' }}
+    needs:
+      - changed
+      - build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: ./internal/tools/go.mod
+          cache-dependency-path: "**/go.sum"
+
+      - id: tag
+        name: Tag
+        run: echo "name=$(make tag)" >> "$GITHUB_OUTPUT"
+
+      - name: Push tag
+        run: git ls-remote --exit-code origin "refs/tags/${{ steps.tag.outputs.name }}" >/dev/null 2>&1 || git push origin "${{ steps.tag.outputs.name }}"
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release view "${{ steps.tag.outputs.name }}" >/dev/null 2>&1 || gh release create "${{ steps.tag.outputs.name }}" --generate-notes
+
+  ci:
+    needs:
+      - changed
+      - build
+      - tag
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify
+        run: |
+          [ "${{ needs.changed.result }}" = "success" ] || exit 1
+          case "${{ needs.build.result }}" in success|skipped) ;; *) exit 1 ;; esac
+          case "${{ needs.tag.result }}"   in success|skipped) ;; *) exit 1 ;; esac
