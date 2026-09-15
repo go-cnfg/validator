@@ -1,4 +1,4 @@
-[![Go Reference](https://pkg.go.dev/badge/github.com/go-cnfg/validator.svg)](https://pkg.go.dev/github.com/go-cnfg/validator) ![main](https://github.com/go-cnfg/validator/actions/workflows/go.yaml/badge.svg?branch=main)
+[![Go Reference](https://pkg.go.dev/badge/github.com/go-cnfg/validator.svg)](https://pkg.go.dev/github.com/go-cnfg/validator) ![main](https://github.com/go-cnfg/validator/actions/workflows/go.yaml/badge.svg?branch=main) [![codecov](https://codecov.io/gh/go-cnfg/validator/branch/main/graph/badge.svg)](https://codecov.io/gh/go-cnfg/validator)
 
 # validator
 
