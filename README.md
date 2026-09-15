@@ -6,8 +6,14 @@
 [cnfg](https://github.com/go-cnfg/cnfg), so the rules of a config field live in its struct tag
 and are checked once every source has been read.
 
+```sh
+go get github.com/go-cnfg/validator
+```
+
 ```go
 import (
+    "time"
+
     "github.com/go-cnfg/cnfg"
     "github.com/go-cnfg/validator"
 )
@@ -26,10 +32,18 @@ cfg, err := cnfg.Parse(defaults,
 )
 ```
 
+A field that does not pass stops the parse:
+
+```
+Key: 'Config.Workers' Error:Field validation for 'Workers' failed on the 'gte' tag
+```
+
 `Validate` uses a shared validator with the default settings. `With` takes one you set up
 yourself, for your own rules, a different tag name or translations:
 
 ```go
+import v10 "github.com/go-playground/validator/v10"
+
 v := v10.New()
 v.SetTagName("check")
 
@@ -37,5 +51,5 @@ cfg, err := cnfg.Parse(defaults, cnfg.Flags[Config](), validator.With[Config](v)
 ```
 
 Put the check last so every source has been read. `Parse` returns the zero value of your
-config together with the error when a parser fails, so a config that does not validate never
+config together with the error when a parser fails, so a config that does not pass never
 reaches your program.
