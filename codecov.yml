@@ -2,10 +2,12 @@ coverage:
   status:
     project:
       default:
-        target: auto
+        target: 100%
         threshold: 0%
     patch:
       default:
         target: 100%
 
-comment: false
+comment:
+  layout: "condensed_header, diff, files"
+  require_changes: false
