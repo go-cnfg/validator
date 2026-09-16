@@ -25,7 +25,12 @@ type Config struct {
     Timeout time.Duration `validate:"min=1s"`
 }
 
-cfg, err := cnfg.Parse(defaults,
+cfg, err := cnfg.Parse(Config{
+    Addr:    ":8080",
+    Workers: 4,
+    Level:   "info",
+    Timeout: 30 * time.Second,
+},
     cnfg.Env[Config]("APP"),
     cnfg.Flags[Config](),
     validator.Validate[Config](),
@@ -61,7 +66,7 @@ import v10 "github.com/go-playground/validator/v10"
 v := v10.New()
 v.SetTagName("check")
 
-cfg, err := cnfg.Parse(defaults, cnfg.Flags[Config](), validator.With[Config](v))
+cfg, err := cnfg.Parse(Config{Addr: ":8080"}, cnfg.Flags[Config](), validator.With[Config](v))
 ```
 
 Put the check last so every source has been read. `Parse` returns the zero value of your
