@@ -2,9 +2,8 @@
 
 # validator
 
-[go-playground/validator](https://github.com/go-playground/validator) as a parser for
-[cnfg](https://github.com/go-cnfg/cnfg), so the rules of a config field live in its struct tag
-and are checked once every source has been read.
+[go-playground/validator](https://github.com/go-playground/validator) shim for
+[cnfg](https://github.com/go-cnfg/cnfg), to better validation logic for configs.
 
 ```sh
 go get github.com/go-cnfg/validator
