@@ -2,8 +2,9 @@
 
 # validator
 
-[go-playground/validator](https://github.com/go-playground/validator) shim for
-[cnfg](https://github.com/go-cnfg/cnfg), to better validation logic for configs.
+[go-playground/validator](https://github.com/go-playground/validator) as a parser for
+[cnfg](https://github.com/go-cnfg/cnfg), so the rules of a config field live in its struct tag
+and are checked once every source has been read.
 
 ```sh
 go get github.com/go-cnfg/validator
@@ -24,7 +25,12 @@ type Config struct {
     Timeout time.Duration `validate:"min=1s"`
 }
 
-cfg, err := cnfg.Parse(defaults,
+cfg, err := cnfg.Parse(Config{
+    Addr:    ":8080",
+    Workers: 4,
+    Level:   "info",
+    Timeout: 30 * time.Second,
+},
     cnfg.Env[Config]("APP"),
     cnfg.Flags[Config](),
     validator.Validate[Config](),
@@ -37,6 +43,20 @@ A field that does not pass stops the parse:
 Key: 'Config.Workers' Error:Field validation for 'Workers' failed on the 'gte' tag
 ```
 
+The error is go-playground's `ValidationErrors`, so `errors.As` gets you every field that
+failed and the tag it failed on, for a message of your own:
+
+```go
+import v10 "github.com/go-playground/validator/v10"
+
+var fields v10.ValidationErrors
+if errors.As(err, &fields) {
+    for _, f := range fields {
+        log.Printf("%s: %s", f.Field(), f.Tag())
+    }
+}
+```
+
 `Validate` uses a shared validator with the default settings. `With` takes one you set up
 yourself, for your own rules, a different tag name or translations:
 
@@ -46,7 +66,7 @@ import v10 "github.com/go-playground/validator/v10"
 v := v10.New()
 v.SetTagName("check")
 
-cfg, err := cnfg.Parse(defaults, cnfg.Flags[Config](), validator.With[Config](v))
+cfg, err := cnfg.Parse(Config{Addr: ":8080"}, cnfg.Flags[Config](), validator.With[Config](v))
 ```
 
 Put the check last so every source has been read. `Parse` returns the zero value of your
