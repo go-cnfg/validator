@@ -2,8 +2,9 @@
 
 # validator
 
-[go-playground/validator](https://github.com/go-playground/validator) shim for
-[cnfg](https://github.com/go-cnfg/cnfg), to better validation logic for configs.
+[go-playground/validator](https://github.com/go-playground/validator) as a parser for
+[cnfg](https://github.com/go-cnfg/cnfg), so the rules of a config field live in its struct tag
+and are checked once every source has been read.
 
 ```sh
 go get github.com/go-cnfg/validator
@@ -35,6 +36,20 @@ A field that does not pass stops the parse:
 
 ```
 Key: 'Config.Workers' Error:Field validation for 'Workers' failed on the 'gte' tag
+```
+
+The error is go-playground's `ValidationErrors`, so `errors.As` gets you every field that
+failed and the tag it failed on, for a message of your own:
+
+```go
+import v10 "github.com/go-playground/validator/v10"
+
+var fields v10.ValidationErrors
+if errors.As(err, &fields) {
+    for _, f := range fields {
+        log.Printf("%s: %s", f.Field(), f.Tag())
+    }
+}
 ```
 
 `Validate` uses a shared validator with the default settings. `With` takes one you set up
