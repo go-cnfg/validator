@@ -19,14 +19,14 @@ func ExampleValidate() {
 	defaults := AppConfig{Addr: ":8080", Workers: 4}
 
 	cfg, err := cnfg.Parse(defaults,
-		cnfg.EnvFrom[AppConfig]("APP", []string{"APP_WORKERS=8"}),
-		validator.Validate[AppConfig](),
+		cnfg.EnvFrom("APP", []string{"APP_WORKERS=8"}),
+		validator.Validate(),
 	)
 	fmt.Println(cfg.Workers, err)
 
 	_, err = cnfg.Parse(defaults,
-		cnfg.EnvFrom[AppConfig]("APP", []string{"APP_WORKERS=0"}),
-		validator.Validate[AppConfig](),
+		cnfg.EnvFrom("APP", []string{"APP_WORKERS=0"}),
+		validator.Validate(),
 	)
 	fmt.Println(err)
 
@@ -36,7 +36,7 @@ func ExampleValidate() {
 }
 
 func ExampleValidate_fields() {
-	_, err := cnfg.Parse(AppConfig{}, validator.Validate[AppConfig]())
+	_, err := cnfg.Parse(AppConfig{}, validator.Validate())
 
 	var fields v10.ValidationErrors
 	if errors.As(err, &fields) {
@@ -58,7 +58,7 @@ func ExampleWith() {
 	v := v10.New()
 	v.SetTagName("check")
 
-	_, err := cnfg.Parse(Config{}, validator.With[Config](v))
+	_, err := cnfg.Parse(Config{}, validator.With(v))
 	fmt.Println(err)
 
 	// Output:

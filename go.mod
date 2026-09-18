@@ -3,7 +3,7 @@ module github.com/go-cnfg/validator
 go 1.25.0
 
 require (
-	github.com/go-cnfg/cnfg v0.5.0
+	github.com/go-cnfg/cnfg v0.8.0
 	github.com/go-playground/validator/v10 v10.30.4
 )
 
