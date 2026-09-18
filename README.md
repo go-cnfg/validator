@@ -2,7 +2,7 @@
 
 # validator
 
-[go-playground/validator](https://github.com/go-playground/validator) as a parser for
+[go-playground/validator](https://github.com/go-playground/validator) as a source for
 [cnfg](https://github.com/go-cnfg/cnfg), so the rules of a config field live in its struct tag
 and are checked once every source has been read.
 
@@ -31,9 +31,9 @@ cfg, err := cnfg.Parse(Config{
     Level:   "info",
     Timeout: 30 * time.Second,
 },
-    cnfg.Env[Config]("APP"),
-    cnfg.Flags[Config](),
-    validator.Validate[Config](),
+    cnfg.Env("APP"),
+    cnfg.Flags(),
+    validator.Validate(),
 )
 ```
 
@@ -66,9 +66,9 @@ import v10 "github.com/go-playground/validator/v10"
 v := v10.New()
 v.SetTagName("check")
 
-cfg, err := cnfg.Parse(Config{Addr: ":8080"}, cnfg.Flags[Config](), validator.With[Config](v))
+cfg, err := cnfg.Parse(Config{Addr: ":8080"}, cnfg.Flags(), validator.With(v))
 ```
 
 Put the check last so every source has been read. `Parse` returns the zero value of your
-config together with the error when a parser fails, so a config that does not pass never
+config together with the error when a source fails, so a config that does not pass never
 reaches your program.
