@@ -1,6 +1,6 @@
 module github.com/go-cnfg/validator
 
-go 1.27.3
+go 1.27.4
 
 require (
 	github.com/go-cnfg/cnfg v0.13.0
